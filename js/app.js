@@ -39,6 +39,13 @@ class Presupuesto {
         console.log(this.restante);
 
     }
+
+    deleteGasto(id){
+
+        this.gastos = this.gastos.filter (gasto => gasto.id !== id);
+        this.calcularRestante();
+
+    }
 }
 
 class UI {
@@ -81,12 +88,11 @@ class UI {
         setTimeout(() =>{
 
             divMensaje.remove();
-            formulario.reset();
 
         }, 3000);
     }
 
-    agregarGastoListado(gastos){
+    mostrarGastos(gastos){
 
         this.limpiarHtml();
 
@@ -112,6 +118,12 @@ class UI {
             btnBorrar.innerHTML = 'Borrar &times;';
             li.appendChild(btnBorrar);
 
+            btnBorrar.onclick = ()=>{
+
+                eliminarGasto(id);
+
+            }
+
             //agregar al HTML
             gastoListado.appendChild(li);
         });
@@ -129,6 +141,37 @@ class UI {
 
         document.querySelector('#restante').textContent = restante;
 
+    }
+
+    comprobarPresupuesto(presupuestObj){
+
+        const {presupuesto, restante} = presupuestObj;
+        const restanteDiv = document.querySelector('.restante');
+
+        //comprobar 25% 
+
+        if((presupuesto / 4)> restante){
+
+            console.log("ya gastaste el 75%$");
+            restanteDiv.classList.remove('alert-success', 'alert-warning');
+            restanteDiv.classList.add('alert-danger');
+
+        }else if((presupuesto / 2 ) > restante){
+
+            restanteDiv.classList.remove('alert-success');
+            restanteDiv.classList.add('alert-warning');
+
+        }else{
+
+            restanteDiv.classList.remove('alert-warning', 'alert-danger');
+            restanteDiv.classList.add('alert-success');
+
+        }
+
+        if(restante <= 0){
+            ui.imprimirAlerta('El presupuesto se ha agotado', 'error');
+            formulario.querySelector('button[type="submit"]').disabled = true; //desabilitamos el boton 
+        }
     }
 }
 
@@ -186,8 +229,24 @@ function agregarGasto(e){
 
     //imprimir los gastos
     const {gastos, restante} = presupuesto;
-    ui.agregarGastoListado(gastos)
+    ui.mostrarGastos(gastos);
 
     ui.actualizarRestante(restante);
-    
+
+    ui.comprobarPresupuesto(presupuesto);
+
+    formulario.reset();
+
+}
+
+function eliminarGasto(id){
+    //Elimina los gastos del array en el objeto
+    presupuesto.deleteGasto(id);
+    //Elimina los gastos del HTML
+    const {gastos, restante} = presupuesto;
+    ui.mostrarGastos(gastos);
+
+    ui.actualizarRestante(restante);
+    ui.comprobarPresupuesto(presupuesto);
+
 }
